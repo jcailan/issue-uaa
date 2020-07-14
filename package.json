@@ -6,8 +6,9 @@
 	"license": "UNLICENSED",
 	"private": true,
 	"dependencies": {
+		"@sap/audit-logging": "^3.1.0",
 		"@sap/cds": "^3",
-		"@sap/hana-client": "^2.5.101",
+		"@sap/hana-client": "^2.5.86",
 		"@sap/xsenv": "^3.0.0",
 		"@sap/xssec": "^2.2.5",
 		"express": "^4.17.1"
