@@ -1,0 +1,83 @@
+## Generated mta.yaml based on template version 0.2.0
+## appName = cap-samples
+## language=nodejs; multiTenant=false
+## approuter=
+_schema-version: "3.1"
+ID: cap-samples
+version: 1.0.0
+description: "A simple CAP project."
+parameters:
+  enable-parallel-deployments: true
+
+build-parameters:
+  before-all:
+    - builder: custom
+      commands:
+        - npm install
+        - npx cds build
+
+modules:
+  - name: cap-samples-app-router
+    type: approuter.nodejs
+    path: app-router
+    parameters:
+      disk-quota: 256M
+      memory: 256M
+    requires:
+      - name: cap-samples-uaa
+      - name: srv_api
+        group: destinations
+        properties:
+          name: srv_api
+          url: "~{url}"
+          forwardAuthToken: true
+
+  # --------------------- SERVER MODULE ------------------------
+  - name: cap-samples-srv
+    # ------------------------------------------------------------
+    type: nodejs
+    path: gen/srv
+    properties:
+      EXIT: 1 # required by deploy.js task to terminate
+    parameters:
+      memory: 256M
+      disk-quota: 1024M
+    requires:
+      # Resources extracted from CAP configuration
+      - name: cap-samples-db
+      - name: cap-samples-uaa
+    provides:
+      - name: srv_api # required by consumers of CAP services (e.g. approuter)
+        properties:
+          url: ${default-url}
+
+  # -------------------- SIDECAR MODULE ------------------------
+  - name: db
+    # ------------------------------------------------------------
+    type: hdb
+    path: gen/db
+    parameters:
+      app-name: cap-samples-db
+    requires:
+      # 'hana' and 'xsuaa' resources extracted from CAP configuration
+      - name: cap-samples-db
+
+resources:
+  # services extracted from CAP configuration
+  # 'service-plan' can be configured via 'cds.requires.<name>.vcap.plan'
+  # ------------------------------------------------------------
+  - name: cap-samples-db
+    # ------------------------------------------------------------
+    type: com.sap.xs.hdi-container
+    parameters:
+      service: hanatrial # or 'hanatrial' on trial landscapes
+      service-plan: hdi-shared
+    properties:
+      hdi-service-name: ${service-name}
+
+  - name: cap-samples-uaa
+    type: org.cloudfoundry.managed-service
+    parameters:
+      path: ./xs-security.json
+      service: xsuaa
+      service-plan: application

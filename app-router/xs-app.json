@@ -1,0 +1,12 @@
+{
+	"authenticationMethod": "route",
+	"routes": [
+		{
+			"source": "/NorthWind/(.*)$",
+			"target": "/NorthWind/$1",
+			"authenticationType": "xsuaa",
+			"destination": "srv_api",
+			"csrfProtection": true
+		}
+	]
+}
